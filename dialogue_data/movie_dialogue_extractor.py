@@ -2,9 +2,7 @@
 
 import csv
 
-with open('extracted_dialogue.csv', 'w+') as f:
-    writer = csv.writer(f, delimiter=';')
-    writer.writerow(['#1', '#2'])
+with open('extracted_dialogue.txt', 'w+') as f:
 
     with open('movie_lines.txt', 'r', encoding="utf-8", errors="ignore") as f1:
         lines1 = f1.readlines()
@@ -23,4 +21,5 @@ with open('extracted_dialogue.csv', 'w+') as f:
 
             # extract dialogue to file
             for p in dialogue_code:
-                writer.writerow([line_dic[p[0]], line_dic[p[1]]])
+                f.write(line_dic[p[0]]+'\n')
+                f.write(line_dic[p[1]]+'\n')
