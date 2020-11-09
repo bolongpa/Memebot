@@ -148,7 +148,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
 def trainIters(encoder, decoder, lang_dict, max_length, sentences,  n_iters, print_every=1000, learning_rate=0.01):
     print_loss_total = 0
-    
+
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
     training_data = [getSentenceTensor(lang_dict, random.choice(sentences))
