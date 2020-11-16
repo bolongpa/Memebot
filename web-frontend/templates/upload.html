@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MemeBot RandomPredict</title>
+  </head>
+  <body>
+
+    {% if msg %}
+    <h1>{{ msg }}</h1>
+    {% endif %}
+    
+    <h1>Upload Meme</h1>
+    
+    <form method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+
+    <h1>Reply:</h1>
+    {% if img_src %}
+      <img src="{{ img_src }}">
+    {% endif %}
+    
+    {% if reply_meme %}
+      <p>
+        Reply to the meme:
+        <img src="{{ reply_meme }}">
+      </p>
+    
+    {% else %}
+      The reply meme will be displayed here
+    {% endif %}
+  </body>
+</html>
+    
