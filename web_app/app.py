@@ -1,13 +1,8 @@
-import os
-
 from flask import Flask, render_template, request
-
 from web_app.ocr_core import ocr_core
-
 from web_app.utils import *
-
-# TODO:import memebot model method
-
+from PIL import Image
+import imagehash
 
 UPLOAD_FOLDER = './static/uploads/'
 DOWNLOAD_FOLDER = './static/downloads'
@@ -26,18 +21,8 @@ if not os.path.isdir(DOWNLOAD_FOLDER):
 
 app = Flask(__name__, static_folder='./static')
 
-# 用model模型数据代替“_”，有多个数据（比如对话model可能需要embedding model和encoder-decoder model）的依次列出
-# _ = load_similarity_model()
-
 _ = load_dialog_model()
-
-# 不知道embedding需不需要单独的模型，不需要的话就删掉这一步load然后把embedding部分并入到get_picture函数就行了
 _ = load_embedding_model()
-
-
-def allowed_file(filename):
-    return '.' in filename.lower() and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/')
@@ -48,54 +33,84 @@ def home_page():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_page():
     if request.method == 'POST':
-        # check if the post request has the file part
+        # Form submission check: if form is not empty, append to out.txt
+        current_form = request.form.to_dict()
+        if bool(current_form):
+            chosen_key = list(current_form.keys())[0]
+            chosen_val = current_form[chosen_key]
+            image_hash = imagehash.average_hash(Image.open(chosen_val))
+            with open("out.txt", "a+") as f:
+                f.write(f"{image_hash} $ {chosen_key}")
+                f.write("\n")
+            print("Successfully appended to out.txt!")
+            return render_template('upload.html', msg='No file selected')
+        # Safety check for user upload
         if 'file' not in request.files:
             return render_template('upload.html', msg='No file selected')
         file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
         if file.filename == '':
             return render_template('upload.html', msg='No file selected')
 
         if file and allowed_file(file.filename):
-            file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+            saved_file_name = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(saved_file_name)
 
-            # call the OCR function on it
-            # 第一步，用OCR提取图片里的text？
-            input_text = ocr_core(file)
-            reply_meme_dir = reply_meme(input_text)
-            print("ATTENTION", input_text, reply_meme_dir)
+            # Extract meme caption from input image
+            input_text = ocr_core(saved_file_name)
+            meme_save_paths = reply_meme(input_text)
+            random_memes = random_meme()
 
-            # extract the text and display it
+            # Display generated meme
+            # TODO: display randomized meme for evaluation
             return render_template('upload.html',
                                    msg='Successfully processed',
-                                   reply_meme=reply_meme_dir,
+                                   best_reply_meme=meme_save_paths[0],
+                                   second_reply_meme=meme_save_paths[1],
+                                   third_reply_meme=meme_save_paths[2],
+                                   random_meme=random_memes[0],
                                    img_src=UPLOAD_FOLDER + file.filename)
     elif request.method == 'GET':
         return render_template('upload.html')
 
 
-# 返回一个生成好的图片的网址
 def reply_meme(input_text):
-    # 第二步，把input_text送进对话模型算出reply_text
-    # 把_替换成对话模型数据
-    # reply_text = get_reply(_, input_text)
-    reply_text = "how are you"
-    # 第三步， 把reply_text送进embedding model算embedding
-    # 把_替换成embedding模型数据
+    # Generate text reply using language model
+    reply_text = get_reply(input_text)
+
+    # TODO: currently reply_text can not be empty
+    # Generate BERT embedding
+    if len(reply_text.strip()) == 0:
+        reply_text = "what's up bro"
     reply_embedding = get_embedding(reply_text)
-    # 第四步，把embedding送进bert模型算出匹配的meme图片
-    # 把_替换成bert模型数据
-    img_id, caption, base_img_id = get_similar_meme(reply_embedding)
-    # 第五步，把图片和原本的reply一起生成新的meme并返回meme链接
-    meme_save_path = get_meme(img_id, DOWNLOAD_FOLDER)
-    return meme_save_path
+
+    # Find nearest top k=3 neighbors to choose from
+    img_ids, captions, base_img_ids = get_similar_meme(reply_embedding)
+    meme_save_paths = get_meme(img_ids, DOWNLOAD_FOLDER)
+    return meme_save_paths
+
+
+def random_meme():
+    img_id, caption, base_img_id = get_random_meme()
+    meme_save_paths = get_meme([img_id], DOWNLOAD_FOLDER)
+    print(img_id, meme_save_paths)
+    return meme_save_paths
+
+
+def allowed_file(filename):
+    return '.' in filename.lower() and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 if __name__ == '__main__':
+    # run server in web_app/: python app.py
     app.run(debug=True)
-    # reply_text = "how are you"
+
+    # reply_text = "what's up bro"
+    #
+    # # Generate BERT embedding
     # reply_embedding = get_embedding(reply_text)
-    # img_id, caption, base_img_id = get_similar_meme(reply_embedding)
-    # meme_save_path = get_meme(img_id, DOWNLOAD_FOLDER)
-    # print(img_id, caption, base_img_id)
+    #
+    # # Find nearest top k=1 neighbors to choose from
+    # img_ids, captions, base_img_ids = get_similar_meme(reply_embedding)
+    # meme_save_paths = get_meme(img_ids, DOWNLOAD_FOLDER)
+    # print(len(img_ids))

@@ -2,3 +2,7 @@ memes/*
 web_app/static/*
 .idea/*
 .DS_Store/*
+*__pycache__*
+web_app/out.txt
+.python-version
+*pyc
