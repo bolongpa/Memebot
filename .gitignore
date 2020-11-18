@@ -1,1 +1,4 @@
 memes/*
+web_app/static/*
+.idea/*
+.DS_Store/*
