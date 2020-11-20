@@ -9,10 +9,7 @@ import random
 # for dialog model
 import tensorflow as tf
 import pickle
-from transformer_model import textPreprocess
-from transformer_model import transformer
-from transformer_model import CustomSchedule
-from transformer_model import accuracy, loss_function
+from web_app.transformer_model import textPreprocess, transformer, CustomSchedule, accuracy, loss_function
 
 
 MEME_BERT = None
@@ -20,6 +17,10 @@ MEME_DF = None
 
 DIALOG_TRANS = None
 DIALOG_TOKEN = None
+
+START_TOKEN, END_TOKEN = None, None
+MAX_LENGTH = 30
+
 
 def get_captioned_img(img_ids, save_path):
 	save_names = []
@@ -43,7 +44,6 @@ def get_captioned_img(img_ids, save_path):
 def load_dialog_model():
 	strategy = tf.distribute.get_strategy()
 
-	MAX_LENGTH = 30
 	BATCH_SIZE = int(64 * strategy.num_replicas_in_sync)
 	BUFFER_SIZE = 20000
 
@@ -56,9 +56,11 @@ def load_dialog_model():
 	EPOCHS = 100
 
 	global DIALOG_TOKEN
-	with open('tokenizer.pickle', 'rb') as handle:
+	with open('/tmp/tokenizer.pickle', 'rb') as handle:
 		DIALOG_TOKEN = pickle.load(handle)
 
+	global START_TOKEN
+	global END_TOKEN
 	START_TOKEN, END_TOKEN = [DIALOG_TOKEN.vocab_size], [DIALOG_TOKEN.vocab_size + 1]
 	VOCAB_SIZE = DIALOG_TOKEN.vocab_size + 2
 
@@ -73,10 +75,10 @@ def load_dialog_model():
 		units=UNITS,
 		d_model=D_MODEL,
 		num_heads=NUM_HEADS,
-		dropout=DROPOUT)
+		dropout=DROPOUT
+	)
 	DIALOG_TRANS.compile(optimizer=optimizer, loss=loss_function, metrics=[accuracy])
-	DIALOG_TRANS.load_weights('saved_weights.h5')
-
+	DIALOG_TRANS.load_weights('/tmp/saved_weights.h5')
 
 
 def load_embedding_model():
@@ -91,30 +93,33 @@ def load_embedding_model():
 def get_reply(input_text):
 	global DIALOG_TOKEN
 	global DIALOG_TRANS
+	global MAX_LENGTH
 
 	def evaluate(sentence, model):
 		sentence = textPreprocess(sentence)
 		sentence = tf.expand_dims(
-			START_TOKEN + DIALOG_TOKEN.encode(sentence) + END_TOKEN, axis=0)
+			START_TOKEN + DIALOG_TOKEN.encode(sentence) + END_TOKEN, axis=0
+		)
 		output = tf.expand_dims(START_TOKEN, 0)
 
 		for i in range(MAX_LENGTH):
-		predictions = model(inputs=[sentence, output], training=False)
-		
-		predictions = predictions[:, -1:, :]
-		predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
-		
-		if tf.equal(predicted_id, END_TOKEN[0]):
-			break
-		
-		output = tf.concat([output, predicted_id], axis=-1)
+			predictions = model(inputs=[sentence, output], training=False)
+
+			predictions = predictions[:, -1:, :]
+			predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
+
+			if tf.equal(predicted_id, END_TOKEN[0]):
+				break
+
+			output = tf.concat([output, predicted_id], axis=-1)
 
 		return tf.squeeze(output, axis=0)
 
 	sentence = " ".join(input_text).strip(' ')
 	prediction = evaluate(sentence, DIALOG_TRANS)
 	predicted_sentence = DIALOG_TOKEN.decode(
-	[i for i in prediction if i < DIALOG_TOKEN.vocab_size])
+		[i for i in prediction if i < DIALOG_TOKEN.vocab_size]
+	)
 	
 	return predicted_sentence.lstrip()
 

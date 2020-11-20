@@ -4,6 +4,8 @@
 
 1. Install the requirements
 ```
+$ virtualenv -p $(which python) ./venv_web_app
+$ source venv_web_app/bin/activate
 $ pip install -r requirements.txt
 ```
 

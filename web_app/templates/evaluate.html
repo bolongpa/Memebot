@@ -8,13 +8,6 @@
     {% if msg %}
     <h1>{{ msg }}</h1>
     {% endif %}
-    
-    <h1>Upload Meme</h1>
-    
-    <form method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
 
     {% if img_src %}
     <p>
@@ -59,7 +52,7 @@
 
     </table>
 
-    <form action="/upload" method = "POST">
+    <form action="/evaluate" method = "POST">
       <input type="radio" name="0" value="{{ img_src }}">Best &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <input type="radio" name="1" value="{{ img_src }}">Second &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <input type="radio" name="2" value="{{ img_src }}">Third &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
