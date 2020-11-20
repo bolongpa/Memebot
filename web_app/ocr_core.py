@@ -3,9 +3,9 @@ try:
 except ImportError:
     import Image
 import cv2
-import numpy as np
 import pytesseract
-import sys, os
+import sys
+
 
 def ocr_core(filename):
     def meme_process(img):
@@ -19,10 +19,10 @@ def ocr_core(filename):
                 else:
                     img[i][j] = (255, 255, 255)
         return img
-    
+
+    # Provided that tesseract is installed: https://tesseract-ocr.github.io/tessdoc/Compiling.html
     pytesseract.pytesseract.tesseract_cmd = r"/usr/local/bin/tesseract"
     image = cv2.imread(filename)
-    #    image = Image.open(filename)
     image = meme_process(image)
     custom_config = r'-l eng --psm 1 -c tessedit_char_blacklist=1?|><.'
 
@@ -31,4 +31,6 @@ def ocr_core(filename):
     print(result)
     return result
 
-ocr_core(sys.argv[1])
+
+if __name__ == "__main__":
+    ocr_core(sys.argv[1])
