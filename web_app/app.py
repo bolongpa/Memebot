@@ -57,13 +57,15 @@ def upload_page():
 
             # Extract meme caption from input image
             input_text = ocr_core(saved_file_name)
-            meme_save_paths = reply_meme(input_text)
+            reply_text, meme_save_paths = reply_meme(input_text)
             random_memes = random_meme()
 
             # Display generated meme
             # TODO: display randomized meme for evaluation
             return render_template('upload.html',
                                    msg='Successfully processed',
+                                   extracted_img_caption=input_text,
+                                   generated_reply=reply_text,
                                    best_reply_meme=meme_save_paths[0],
                                    second_reply_meme=meme_save_paths[1],
                                    third_reply_meme=meme_save_paths[2],
@@ -71,6 +73,57 @@ def upload_page():
                                    img_src=UPLOAD_FOLDER + file.filename)
     elif request.method == 'GET':
         return render_template('upload.html')
+
+
+@app.route('/evaluate', methods=['GET', 'POST'])
+def evaluate_page():
+    if request.method == 'POST':
+        # Form submission check: if form is not empty, append to out.txt
+        current_form = request.form.to_dict()
+        if bool(current_form):
+            chosen_key = list(current_form.keys())[0]
+            chosen_val = current_form[chosen_key]
+            image_hash = imagehash.average_hash(Image.open(chosen_val))
+            with open("out.txt", "a+") as f:
+                f.write(f"{image_hash} $ {chosen_key}")
+                f.write("\n")
+            print("Successfully appended to out.txt!")
+
+        random_memes = random_meme()
+        img_src = random_memes[0]
+
+        input_text = ocr_core(img_src)
+        reply_text, meme_save_paths = reply_meme(input_text)
+        random_memes = random_meme()
+
+        return render_template('evaluate.html',
+                               msg='Evaluating random meme from our DB...',
+                               extracted_img_caption=input_text,
+                               generated_reply=reply_text,
+                               best_reply_meme=meme_save_paths[0],
+                               second_reply_meme=meme_save_paths[1],
+                               third_reply_meme=meme_save_paths[2],
+                               random_meme=random_memes[0],
+                               img_src=img_src)
+
+    elif request.method == 'GET':
+        # Everytime evaluate page is loaded: generate a random pic to display
+        random_memes = random_meme()
+        img_src = random_memes[0]
+
+        input_text = ocr_core(img_src)
+        reply_text, meme_save_paths = reply_meme(input_text)
+        random_memes = random_meme()
+
+        return render_template('evaluate.html',
+                               msg='Evaluating random meme from our DB...',
+                               extracted_img_caption=input_text,
+                               generated_reply=reply_text,
+                               best_reply_meme=meme_save_paths[0],
+                               second_reply_meme=meme_save_paths[1],
+                               third_reply_meme=meme_save_paths[2],
+                               random_meme=random_memes[0],
+                               img_src=img_src)
 
 
 def reply_meme(input_text):
@@ -86,13 +139,12 @@ def reply_meme(input_text):
     # Find nearest top k=3 neighbors to choose from
     img_ids, captions, base_img_ids = get_similar_meme(reply_embedding)
     meme_save_paths = get_meme(img_ids, DOWNLOAD_FOLDER)
-    return meme_save_paths
+    return reply_text, meme_save_paths
 
 
 def random_meme():
     img_id, caption, base_img_id = get_random_meme()
     meme_save_paths = get_meme([img_id], DOWNLOAD_FOLDER)
-    print(img_id, meme_save_paths)
     return meme_save_paths
 
 
@@ -104,13 +156,6 @@ def allowed_file(filename):
 if __name__ == '__main__':
     # run server in web_app/: python app.py
     app.run(debug=True)
-
-    # reply_text = "what's up bro"
-    #
-    # # Generate BERT embedding
-    # reply_embedding = get_embedding(reply_text)
-    #
-    # # Find nearest top k=1 neighbors to choose from
-    # img_ids, captions, base_img_ids = get_similar_meme(reply_embedding)
-    # meme_save_paths = get_meme(img_ids, DOWNLOAD_FOLDER)
-    # print(len(img_ids))
+    # input_text = "how are you bro"
+    # reply_text = get_reply(input_text)
+    # print(reply_text)
