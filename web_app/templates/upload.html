@@ -2,6 +2,8 @@
 <html>
   <head>
     <title>MemeBot RandomPredict</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   </head>
   <body>
 
@@ -9,10 +11,10 @@
     <h1>{{ msg }}</h1>
     {% endif %}
     
-    <h1>Upload Meme</h1>
+    <h1 class="w3-blue">Upload Meme</h1>
     
     <form method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
+      <p><label class="fileContainer">Choose File<input type=file name=file></label>
          <input type=submit value=Upload>
     </form>
 
@@ -24,10 +26,10 @@
     {% endif %}
     
     {% if best_reply_meme %}
-    <p>
+    <p class="w3-blue">
       Extracted img caption is {{extracted_img_caption}}
     </p>
-    <p>
+    <p class="w3-blue">
       Generated reply is {{generated_reply}}
     </p>
     <p>
