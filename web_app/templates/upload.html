@@ -31,41 +31,45 @@
       Generated reply is {{generated_reply}}
     </p>
     <p>
-      Choose the BEST REPLY PLZ
+      Reply Img:
+      <img src="{{ best_reply_meme }}" width="250px">
     </p>
-    <table width="500" border="0" cellpadding="5" style="color: white;">
+<!--    <p>-->
+<!--      Choose the BEST REPLY PLZ-->
+<!--    </p>-->
+<!--    <table width="500" border="0" cellpadding="5" style="color: white;">-->
 
-      <tr>
-        <td align="center" valign="center">
-          <img src="{{ best_reply_meme }}" width="250px">
-          <br/> Best reply to the meme
-        </td>
+<!--      <tr>-->
+<!--        <td align="center" valign="center">-->
+<!--          <img src="{{ best_reply_meme }}" width="250px">-->
+<!--          <br/> Best reply to the meme-->
+<!--        </td>-->
 
-        <td align="center" valign="center">
-          <img src="{{ second_reply_meme }}" width="250px">
-          <br/> Second best reply to the meme
-        </td>
+<!--        <td align="center" valign="center">-->
+<!--          <img src="{{ second_reply_meme }}" width="250px">-->
+<!--          <br/> Second best reply to the meme-->
+<!--        </td>-->
 
-        <td align="center" valign="center">
-          <img src="{{ third_reply_meme }}" width="250px">
-          <br/> Third best reply to the meme
-        </td>
+<!--        <td align="center" valign="center">-->
+<!--          <img src="{{ third_reply_meme }}" width="250px">-->
+<!--          <br/> Third best reply to the meme-->
+<!--        </td>-->
 
-        <td align="center" valign="center">
-          <img src="{{ random_meme }}" width="250px">
-          <br/> Random meme
-        </td>
-      </tr>
+<!--        <td align="center" valign="center">-->
+<!--          <img src="{{ random_meme }}" width="250px">-->
+<!--          <br/> Random meme-->
+<!--        </td>-->
+<!--      </tr>-->
 
-    </table>
+<!--    </table>-->
 
-    <form action="/upload" method = "POST">
-      <input type="radio" name="0" value="{{ img_src }}">1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <input type="radio" name="1" value="{{ img_src }}">2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <input type="radio" name="2" value="{{ img_src }}">3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <input type="radio" name="3" value="{{ img_src }}">4
-      <p><input type = "submit" value = "Submit" /></p>
-    </form>
+<!--    <form action="/upload" method = "POST">-->
+<!--      <input type="radio" name="0" value="{{ img_src }}">1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+<!--      <input type="radio" name="1" value="{{ img_src }}">2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+<!--      <input type="radio" name="2" value="{{ img_src }}">3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+<!--      <input type="radio" name="3" value="{{ img_src }}">4-->
+<!--      <p><input type = "submit" value = "Submit" /></p>-->
+<!--    </form>-->
 
     {% else %}
       The reply meme will be displayed here
