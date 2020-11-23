@@ -13,8 +13,3 @@ $ pip install -r requirements.txt
 ```
 $ python app.py
 ```
-
-## TODO
-
-- replace ocr_core.py with model of meme bot. Clear /static/reply/ and put reply meme into this directory.
-- meme bot python snippet takes image, and output reply directory in /static/reply/ 
